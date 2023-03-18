@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ .Conf.Title }}</title>
+  </head>
+  <body>
+    <h1>{{ .Conf.Title }}</h1>
+    <h5>{{ .Conf.Author }} | {{ .Conf.Email }} | {{ .Conf.Link }}</h5>
+    <hr>
+    <ul>
+      {{ range .Titles }}
+      <li><a href="/posts/{{ . }}">{{ . }}</a></li>
+      {{ end }}
+    </ul>
+  </body>
+</html>
