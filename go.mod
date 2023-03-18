@@ -1,4 +1,4 @@
-module git.plain.technology/nano-blog
+module git.plain.technology/glean
 
 go 1.20
 
