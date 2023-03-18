@@ -2,10 +2,76 @@
 <html>
   <head>
     <title>{{ .Conf.Title }}</title>
+    <style>
+      html, body, h1, h2, h3, h4, h5, h6, p, ul, ol, li, figure, figcaption, blockquote {
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        font-family: 'Georgia', serif;
+        font-size: 18px;
+        line-height: 1.5;
+      }
+
+      body {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px;
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        font-weight: bold;
+        margin-bottom: 0.5em;
+      }
+
+      h1 {
+        font-size: 2em;
+      }
+
+      h2 {
+        font-size: 1.75em;
+      }
+
+      h3 {
+        font-size: 1.5em;
+      }
+
+      h4 {
+        font-size: 1.25em;
+      }
+
+      h5 {
+        font-size: 1em;
+      }
+
+      h6 {
+        font-size: 0.75em;
+      }
+
+      p {
+        margin-bottom: 1em;
+      }
+
+      ul, ol {
+        margin-bottom: 1em;
+        padding-left: 1em;
+      }
+
+      li {
+        margin-bottom: 0.5em;
+      }
+
+      blockquote {
+        margin: 1em 0;
+        padding-left: 1em;
+        border-left: 2px solid black;
+      }
+    </style>
   </head>
   <body>
     <h1>{{ .Conf.Title }}</h1>
-    <h5>{{ .Conf.Author }} | {{ .Conf.Email }} | {{ .Conf.Link }}</h5>
+    <h5>{{ .Conf.Author }} | <a mailto="{{ .Conf.Email }}">{{ .Conf.Email }}</a> | <a href="{{ .Conf.Link }}">{{ .Conf.Link }}</a></h5>
     <hr>
     <ul>
       {{ range .Titles }}
