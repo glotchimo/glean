@@ -1,4 +1,6 @@
 title: Plain Technology
 author: Elliott Maguire
 email: elliott@plain.technology
-link: ssh://git.plain.technology:23231
+links: 
+  Git: ssh://git.plain.technology:23231
+  YouTube: https://www.youtube.com/channel/UCLNIhyppiWZYbtYKfO35jvg

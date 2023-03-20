@@ -23,10 +23,10 @@ var (
 )
 
 type Conf struct {
-	Title  string `yaml:"title"`
-	Author string `yaml:"author"`
-	Email  string `yaml:"email"`
-	Link   string `yaml:"link"`
+	Title  string            `yaml:"title"`
+	Author string            `yaml:"author"`
+	Email  string            `yaml:"email"`
+	Links  map[string]string `yaml:"links"`
 }
 
 type Index struct {

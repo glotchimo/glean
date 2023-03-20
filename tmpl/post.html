@@ -71,12 +71,19 @@
   </head>
   <body>
     <h1>{{ .Conf.Title }}</h1>
-    <h5>{{ .Conf.Author }} | <a mailto="{{ .Conf.Email }}">{{ .Conf.Email }}</a> | <a href="{{ .Conf.Link }}">{{ .Conf.Link }}</a></h5>
+    <h5>{{ .Conf.Author }} <a mailto="{{ .Conf.Email }}">{{ .Conf.Email }}</a></h5>
+    <h6>
+    {{ range $name, $link := .Conf.Links }}
+    <a href="{{ $link }}">{{ $name}}</a>
+    {{ end }}
+    </h6>
     <hr>
     {{ .Content }}
     <hr>
-    Brought to you by 120 lines of Go. 
-    If you'd like to chat, please reach out via email. 
-    Grace and peace!
+    <h6>
+      Brought to you by 120 lines of Go. 
+      If you'd like to chat, please reach out via email. 
+      Grace and peace!
+    </h6>
   </body>
 </html>

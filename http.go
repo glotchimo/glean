@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/parser"
@@ -19,7 +20,8 @@ func ServeIndex(w http.ResponseWriter, r *http.Request) {
 
 	idx := Index{Conf: conf}
 	for _, e := range files {
-		idx.Titles = append(idx.Titles, e.Name())
+		name := strings.TrimSuffix(e.Name(), ".md")
+		idx.Titles = append(idx.Titles, name)
 	}
 
 	if err := indexTmpl.Execute(w, idx); err != nil {
@@ -29,7 +31,7 @@ func ServeIndex(w http.ResponseWriter, r *http.Request) {
 
 // ServePost reads from `posts/*.md` and translates to HTML.
 func ServePost(w http.ResponseWriter, r *http.Request) {
-	f, err := os.Open("." + r.URL.Path)
+	f, err := os.Open("." + r.URL.Path + ".md")
 	if err != nil {
 		http.Error(w, "error opening post file", http.StatusNotFound)
 		return
