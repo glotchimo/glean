@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/parser"
 )
 
 // ServeIndex generates an index from the files in `posts/`.
@@ -41,9 +42,11 @@ func ServePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
+	parser := parser.NewWithExtensions(extensions)
 	post := Post{
 		Conf:    conf,
-		Content: string(markdown.ToHTML(md, nil, nil)),
+		Content: string(markdown.ToHTML(md, parser, nil)),
 	}
 
 	if err := postTmpl.Execute(w, post); err != nil {
