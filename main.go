@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -43,14 +42,12 @@ type Post struct {
 func init() {
 	f, err := os.Open("conf.yml")
 	if err != nil {
-		fmt.Println("you must create a `conf.yml` file")
-		os.Exit(2)
+		log.Fatal("error opening config:", err.Error())
 	}
 	defer f.Close()
 
 	if err := yaml.NewDecoder(f).Decode(&conf); err != nil {
-		fmt.Println("error parsing config:", err.Error())
-		os.Exit(1)
+		log.Fatal("error parsing config:", err.Error())
 	}
 
 	indexTmpl = template.Must(template.New("index").Parse(indexHTML))

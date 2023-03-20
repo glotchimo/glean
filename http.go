@@ -26,7 +26,7 @@ func ServeIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ServePost reads from `posts/*.md`, translates to HTML.
+// ServePost reads from `posts/*.md` and translates to HTML.
 func ServePost(w http.ResponseWriter, r *http.Request) {
 	f, err := os.Open("." + r.URL.Path)
 	if err != nil {
@@ -41,10 +41,12 @@ func ServePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := markdown.ToHTML(md, nil, nil)
-	post := Post{Conf: conf, Content: string(html)}
+	post := Post{
+		Conf:    conf,
+		Content: string(markdown.ToHTML(md, nil, nil)),
+	}
 
 	if err := postTmpl.Execute(w, post); err != nil {
-		panic(err)
+		http.Error(w, "error executing template", http.StatusInternalServerError)
 	}
 }
