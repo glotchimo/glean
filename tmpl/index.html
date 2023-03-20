@@ -73,10 +73,11 @@
     <h1>{{ .Conf.Title }}</h1>
     <h5>{{ .Conf.Author }} | <a mailto="{{ .Conf.Email }}">{{ .Conf.Email }}</a> | <a href="{{ .Conf.Link }}">{{ .Conf.Link }}</a></h5>
     <hr>
-    <ul>
-      {{ range .Titles }}
-      <li><a href="/posts/{{ . }}">{{ . }}</a></li>
-      {{ end }}
-    </ul>
+    {{ range .Titles }}
+    <a href="/posts/{{ . }}">{{ . }}</a>
+    {{ end }}
+    Brought to you by 118 lines of Go. 
+    If you'd like to chat, please reach out via email. 
+    Grace and peace!
   </body>
 </html>
