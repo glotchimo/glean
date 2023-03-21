@@ -12,7 +12,7 @@ import (
 
 // ServeIndex generates an index from the files in `posts/`.
 func ServeIndex(w http.ResponseWriter, r *http.Request) {
-	files, err := os.ReadDir("posts")
+	files, err := os.ReadDir(conf.Path)
 	if err != nil {
 		http.Error(w, "error reading posts directory", http.StatusInternalServerError)
 		return
@@ -20,7 +20,12 @@ func ServeIndex(w http.ResponseWriter, r *http.Request) {
 
 	idx := Index{Conf: conf}
 	for _, e := range files {
-		name := strings.TrimSuffix(e.Name(), ".md")
+		name := e.Name()
+		if name[len(name)-3:] != ".md" {
+			continue
+		}
+
+		name = strings.TrimSuffix(name, ".md")
 		idx.Titles = append(idx.Titles, name)
 	}
 
@@ -31,7 +36,8 @@ func ServeIndex(w http.ResponseWriter, r *http.Request) {
 
 // ServePost reads from `posts/*.md` and translates to HTML.
 func ServePost(w http.ResponseWriter, r *http.Request) {
-	f, err := os.Open("." + r.URL.Path + ".md")
+	path := strings.TrimPrefix(r.URL.Path, "/posts")
+	f, err := os.Open(conf.Path + path + ".md")
 	if err != nil {
 		http.Error(w, "error opening post file", http.StatusNotFound)
 		return

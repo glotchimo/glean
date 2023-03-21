@@ -11,6 +11,8 @@ import (
 )
 
 var (
+	port string
+	path string
 	conf Conf
 
 	//go:embed tmpl/index.html
@@ -23,6 +25,8 @@ var (
 )
 
 type Conf struct {
+	Path string `yaml:"path"`
+
 	Title  string            `yaml:"title"`
 	Author string            `yaml:"author"`
 	Email  string            `yaml:"email"`
@@ -40,7 +44,17 @@ type Post struct {
 }
 
 func init() {
-	f, err := os.Open("conf.yml")
+	port = os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	path = os.Getenv("CONF")
+	if path == "" {
+		path = "conf.yml"
+	}
+
+	f, err := os.Open(path)
 	if err != nil {
 		log.Fatal("error opening config:", err.Error())
 	}
@@ -58,9 +72,5 @@ func main() {
 	http.HandleFunc("/", ServeIndex)
 	http.HandleFunc("/posts/", ServePost)
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
