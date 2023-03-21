@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -14,6 +15,7 @@ import (
 func ServeIndex(w http.ResponseWriter, r *http.Request) {
 	files, err := os.ReadDir(conf.Path)
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "error reading posts directory", http.StatusInternalServerError)
 		return
 	}
@@ -30,6 +32,7 @@ func ServeIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := indexTmpl.Execute(w, idx); err != nil {
+		log.Println(err.Error())
 		http.Error(w, "error executing template", http.StatusInternalServerError)
 	}
 }
@@ -39,6 +42,7 @@ func ServePost(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimPrefix(r.URL.Path, "/posts")
 	f, err := os.Open(conf.Path + path + ".md")
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "error opening post file", http.StatusNotFound)
 		return
 	}
@@ -46,6 +50,7 @@ func ServePost(w http.ResponseWriter, r *http.Request) {
 
 	md, err := io.ReadAll(f)
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "error reading post content", http.StatusInternalServerError)
 		return
 	}
@@ -58,6 +63,7 @@ func ServePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := postTmpl.Execute(w, post); err != nil {
+		log.Println(err.Error())
 		http.Error(w, "error executing template", http.StatusInternalServerError)
 	}
 }
