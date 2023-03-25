@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{ .Conf.Title }}</title>
+    <title>{{ .Meta.Title }}</title>
     <style>
       html, body, h1, h2, h3, h4, h5, h6, p, ul, ol, li, figure, figcaption, blockquote {
         margin: 0;
@@ -46,7 +46,11 @@
       }
 
       h6 {
+        align-items: end;
+        display: flex;
         font-size: 0.75em;
+        justify-content: space-between;
+        width: 100%;
       }
 
       p {
@@ -67,23 +71,65 @@
         padding-left: 1em;
         border-left: 2px solid black;
       }
+
+      form {
+        display: flex;
+      }
+
+      input {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: sans-serif;
+        font-size: 1em;
+        padding: 0.25em;
+        width: 16em;
+      }
     </style>
   </head>
   <body>
-    <h1>{{ .Conf.Title }}</h1>
-    <h5>{{ .Conf.Author }} <a mailto="{{ .Conf.Email }}">{{ .Conf.Email }}</a></h5>
+    <h1>{{ .Meta.Title }}</h1>
+    <h5>
+      <span>{{ .Meta.Author }} <a mailto="{{ .Meta.Email }}">{{ .Meta.Email }}</a></span>
+    </h5>
     <h6>
-    {{ range $name, $link := .Conf.Links }}
-    <a href="{{ $link }}">{{ $name}}</a>
-    {{ end }}
+      <span>
+        {{ range $name, $link := .Meta.Links }}
+        <a href="{{ $link }}">{{ $name}}</a>
+        {{ end }}
+      </span>
+    
+      <form id="email-form" action="/register" method="post">
+        <input type="email" name="email" placeholder="Get Notified" required>
+      </form>
     </h6>
+
     <hr>
     {{ .Content }}
     <hr>
+
     <h6>
-      Brought to you by 120 lines of Go. 
+      Brought to you by less than 400 lines of Go. 
       If you'd like to chat, please reach out via email. 
       Grace and peace!
     </h6>
+
+    <script>
+      document.getElementById('email-form').addEventListener('submit', (event) => {
+        event.preventDefault();
+        var formData = new FormData(event.target);
+        fetch('/register', {
+          method: 'POST',
+          body: formData
+        }).then(function(response) {
+          if (!response.ok) {
+              throw Error('Failed to register');
+          }
+          alert('Registration succeeded');
+          event.target.reset();
+        }).catch(function(error) {
+          alert(error.message);
+        });
+      });
+    </script>
   </body>
 </html>

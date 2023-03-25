@@ -1,69 +1,78 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net/http"
-	"os"
 	"strings"
-
-	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/parser"
 )
 
-// ServeIndex generates an index from the files in `posts/`.
-func ServeIndex(w http.ResponseWriter, r *http.Request) {
-	files, err := os.ReadDir(conf.Path)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "error reading posts directory", http.StatusInternalServerError)
+type Index struct {
+	Meta   Meta
+	Titles []string
+}
+
+type Post struct {
+	Meta    Meta
+	Content string
+}
+
+func SendIndex(w http.ResponseWriter, r *http.Request) {
+	log.Printf("%s: %s %s (%dB)", r.RemoteAddr, r.Method, r.Host, r.ContentLength)
+
+	if r.Method != "GET" {
+		http.Error(w, "invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	idx := Index{Conf: conf}
-	for _, e := range files {
-		name := e.Name()
-		if name[len(name)-3:] != ".md" {
-			continue
-		}
-
-		name = strings.TrimSuffix(name, ".md")
-		idx.Titles = append(idx.Titles, name)
+	index, err := MakeIndex()
+	if err != nil {
+		log.Println("error making index:", err.Error())
+		http.Error(w, "error making index", http.StatusInternalServerError)
+		return
 	}
 
-	if err := indexTmpl.Execute(w, idx); err != nil {
+	if err := INDEX_TMPL.Execute(w, index); err != nil {
 		log.Println(err.Error())
 		http.Error(w, "error executing template", http.StatusInternalServerError)
 	}
 }
 
-// ServePost reads from `posts/*.md` and translates to HTML.
-func ServePost(w http.ResponseWriter, r *http.Request) {
+func SendPost(w http.ResponseWriter, r *http.Request) {
+	log.Printf("%s: %s %s (%dB)", r.RemoteAddr, r.Method, r.Host, r.ContentLength)
+
+	if r.Method != "GET" {
+		http.Error(w, "invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
 	path := strings.TrimPrefix(r.URL.Path, "/posts")
-	f, err := os.Open(conf.Path + path + ".md")
+	post, err := MakePost(CONF.PostsPath + path + ".md")
 	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "error opening post file", http.StatusNotFound)
-		return
-	}
-	defer f.Close()
-
-	md, err := io.ReadAll(f)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "error reading post content", http.StatusInternalServerError)
+		log.Println("error making post:", err.Error())
+		http.Error(w, "error making post", http.StatusInternalServerError)
 		return
 	}
 
-	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
-	parser := parser.NewWithExtensions(extensions)
-	post := Post{
-		Conf:    conf,
-		Content: string(markdown.ToHTML(md, parser, nil)),
-	}
-
-	if err := postTmpl.Execute(w, post); err != nil {
+	if err := POST_TMPL.Execute(w, post); err != nil {
 		log.Println(err.Error())
 		http.Error(w, "error executing template", http.StatusInternalServerError)
 	}
+}
+
+func TakeEmail(w http.ResponseWriter, r *http.Request) {
+	log.Printf("%s: %s %s (%dB)", r.RemoteAddr, r.Method, r.Host, r.ContentLength)
+
+	if r.Method != "POST" {
+		http.Error(w, "invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	email := r.FormValue("email")
+	if err := SaveEmail(email); err != nil {
+		log.Println("error saving email:", err.Error())
+		http.Error(w, "error saving email", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
