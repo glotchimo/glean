@@ -1,76 +1,129 @@
 package main
 
 import (
+	"bytes"
 	_ "embed"
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"strings"
 	"text/template"
 
-	"gopkg.in/yaml.v3"
+	"github.com/fsnotify/fsnotify"
 )
 
 var (
-	port string
-	path string
-	conf Conf
+	PATH string
+	PORT string
+
+	CONF Conf
 
 	//go:embed tmpl/index.html
-	indexHTML string
-	indexTmpl *template.Template
+	INDEX_HTML string
+	INDEX_TMPL *template.Template
 
 	//go:embed tmpl/post.html
-	postHTML string
-	postTmpl *template.Template
+	POST_HTML string
+	POST_TMPL *template.Template
 )
 
-type Conf struct {
-	Path string `yaml:"path"`
+func watch(ch chan error) {
+	log.Printf("starting FS watcher on %s\n", CONF.PostsPath)
 
-	Title  string            `yaml:"title"`
-	Author string            `yaml:"author"`
-	Email  string            `yaml:"email"`
-	Links  map[string]string `yaml:"links"`
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		ch <- fmt.Errorf("error creating watcher: %w", err)
+		return
+	}
+	defer watcher.Close()
+
+	if err := watcher.Add(CONF.PostsPath); err != nil {
+		ch <- fmt.Errorf("error adding posts folder: %w", err)
+		return
+	}
+
+	for {
+		select {
+		case event, ok := <-watcher.Events:
+			if !ok {
+				return
+			}
+
+			if event.Op&fsnotify.Create == fsnotify.Create {
+				post, err := MakePost(event.Name)
+				if err != nil {
+					ch <- fmt.Errorf("error making post: %w", err)
+					return
+				}
+
+				subject := fmt.Sprintf("P.T: %s", strings.TrimPrefix(strings.TrimSuffix(event.Name, ".md"), CONF.PostsPath))
+				content := bytes.Buffer{}
+				if err := POST_TMPL.Execute(&content, post); err != nil {
+					ch <- fmt.Errorf("error executing template: %w", err)
+					return
+				}
+
+				if err := SendEmail(subject, content.String()); err != nil {
+					ch <- fmt.Errorf("error sending email: %w", err)
+					return
+				}
+			}
+		case err, ok := <-watcher.Errors:
+			if !ok {
+				return
+			}
+
+			ch <- fmt.Errorf("error in watcher: %w", err)
+			return
+		}
+	}
 }
 
-type Index struct {
-	Conf   Conf
-	Titles []string
-}
+func serve(ch chan error) {
+	log.Printf("starting HTTP server on port %s\n", PORT)
 
-type Post struct {
-	Conf    Conf
-	Content string
+	http.HandleFunc("/", SendIndex)
+	http.HandleFunc("/posts/", SendPost)
+	http.HandleFunc("/register", TakeEmail)
+
+	ch <- http.ListenAndServe(":"+PORT, nil)
 }
 
 func init() {
-	port = os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	flag.StringVar(&PATH, "conf", "~/.config/glean/conf.yml", "Path to configuration")
+	flag.StringVar(&PORT, "port", "8080", "Port to listen on")
+	flag.Parse()
+
+	if err := LoadConf(); err != nil {
+		log.Fatal(err)
 	}
 
-	path = os.Getenv("CONF")
-	if path == "" {
-		path = "conf.yml"
-	}
-
-	f, err := os.Open(path)
-	if err != nil {
-		log.Fatal("error opening config:", err.Error())
-	}
-	defer f.Close()
-
-	if err := yaml.NewDecoder(f).Decode(&conf); err != nil {
-		log.Fatal("error parsing config:", err.Error())
-	}
-
-	indexTmpl = template.Must(template.New("index").Parse(indexHTML))
-	postTmpl = template.Must(template.New("post").Parse(postHTML))
+	INDEX_TMPL = template.Must(template.New("index").Parse(INDEX_HTML))
+	POST_TMPL = template.Must(template.New("post").Parse(POST_HTML))
 }
 
 func main() {
-	http.HandleFunc("/", ServeIndex)
-	http.HandleFunc("/posts/", ServePost)
+	watchErrs := make(chan error)
+	serveErrs := make(chan error)
 
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	go watch(watchErrs)
+	go serve(serveErrs)
+
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
+
+	for {
+		select {
+		case err := <-watchErrs:
+			log.Printf("error in watcher: %s\n", err.Error())
+		case err := <-serveErrs:
+			log.Fatalf("error in server: %s\n", err.Error())
+		case sig := <-signals:
+			log.Printf("received %s signal, shutting down...\n", sig.String())
+			os.Exit(0)
+		}
+	}
 }
