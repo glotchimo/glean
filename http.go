@@ -16,6 +16,32 @@ type Post struct {
 	Content string
 }
 
+func SendFeed(w http.ResponseWriter, r *http.Request) {
+	log.Printf("%s: %s %s (%dB)", r.RemoteAddr, r.Method, r.Host, r.ContentLength)
+
+	if r.Method != "GET" {
+		http.Error(w, "invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	index, err := MakeIndex()
+	if err != nil {
+		log.Println("error making index:", err.Error())
+		http.Error(w, "error making index", http.StatusInternalServerError)
+		return
+	}
+
+	feed, err := MakeFeed(index)
+	if err != nil {
+		log.Println("error making feed:", err.Error())
+		http.Error(w, "error making feed", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/rss+xml")
+	w.Write([]byte(feed))
+}
+
 func SendIndex(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s: %s %s (%dB)", r.RemoteAddr, r.Method, r.Host, r.ContentLength)
 
