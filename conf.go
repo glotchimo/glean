@@ -23,6 +23,7 @@ type SMTP struct {
 }
 
 type Conf struct {
+	Host       string `yaml:"host"`
 	PostsPath  string `yaml:"posts_path"`
 	EmailsPath string `yaml:"emails_path"`
 	Meta       Meta   `yaml:"meta"`
