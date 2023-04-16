@@ -28,7 +28,7 @@ func SendEmail(subject, content string) error {
 
 		addr := fmt.Sprintf("%s:%d", CONF.SMTP.Host, CONF.SMTP.Port)
 		auth := smtp.PlainAuth("", CONF.SMTP.Username, CONF.SMTP.Password, CONF.SMTP.Host)
-		if err := smtp.SendMail(addr, auth, CONF.SMTP.Sender, recipients, mesg); err != nil {
+		if err := smtp.SendMail(addr, auth, CONF.SMTP.Sender, []string{r}, mesg); err != nil {
 			return fmt.Errorf("error sending email: %w", err)
 		}
 
