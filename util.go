@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"net/mail"
 	"os"
 	"strings"
 
@@ -54,6 +55,10 @@ func MakePost(path string) (*Post, error) {
 }
 
 func SaveEmail(email string) error {
+	if _, err := mail.ParseAddress(email); err != nil {
+		return fmt.Errorf("error parsing email: %w", err)
+	}
+
 	emails, err := ReadEmails()
 	if err != nil {
 		return fmt.Errorf("error reading emails: %w", err)

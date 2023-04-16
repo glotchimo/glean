@@ -59,7 +59,7 @@ func watch(ch chan error) {
 					return
 				}
 
-				subject := fmt.Sprintf("P.T: %s", strings.TrimPrefix(strings.TrimSuffix(event.Name, ".md"), CONF.PostsPath))
+				subject := "Plain Technology: " + strings.TrimPrefix(strings.TrimSuffix(event.Name, ".md"), CONF.PostsPath)
 				content := bytes.Buffer{}
 				if err := POST_TMPL.Execute(&content, post); err != nil {
 					ch <- fmt.Errorf("error executing template: %w", err)
