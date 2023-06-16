@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"os"
-
-	"gopkg.in/yaml.v3"
+	"strconv"
 )
 
 type Meta struct {
@@ -24,6 +23,7 @@ type SMTP struct {
 
 type Conf struct {
 	Host       string `yaml:"host"`
+	Port       string `yaml:"port"`
 	PostsPath  string `yaml:"posts_path"`
 	EmailsPath string `yaml:"emails_path"`
 	Meta       Meta   `yaml:"meta"`
@@ -31,15 +31,19 @@ type Conf struct {
 }
 
 func LoadConf() error {
-	f, err := os.Open(PATH)
-	if err != nil {
-		return fmt.Errorf("error opening config: %w", err)
-	}
-	defer f.Close()
+	CONF.Meta.Title = os.Getenv("GLEAN_META_TITLE")
+	CONF.Meta.Author = os.Getenv("GLEAN_META_AUTHOR")
+	CONF.Meta.Email = os.Getenv("GLEAN_META_EMAIL")
+	json.Unmarshal([]byte(os.Getenv("GLEAN_META_LINKS")), &CONF.Meta.Links)
 
-	if err := yaml.NewDecoder(f).Decode(&CONF); err != nil {
-		return fmt.Errorf("error parsing config: %w", err)
-	}
+	CONF.SMTP.Host = os.Getenv("RAILWAY_STATIC_URL")
+	CONF.SMTP.Port, _ = strconv.Atoi(os.Getenv("GLEAN_SMTP_PORT"))
+	CONF.SMTP.Username = os.Getenv("GLEAN_SMTP_USERNAME")
+	CONF.SMTP.Password = os.Getenv("GLEAN_SMTP_PASSWORD")
+	CONF.SMTP.Sender = os.Getenv("GLEAN_SMTP_SENDER")
+
+	CONF.Host = os.Getenv("RAILWAY_STATIC_URL")
+	CONF.Port = os.Getenv("GLEAN_PORT")
 
 	return nil
 }

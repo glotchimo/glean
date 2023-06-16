@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "embed"
-	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -10,9 +10,6 @@ import (
 )
 
 var (
-	PATH string
-	PORT string
-
 	CONF Conf
 
 	//go:embed tmpl/index.html
@@ -25,10 +22,6 @@ var (
 )
 
 func init() {
-	flag.StringVar(&PATH, "conf", "~/.config/glean/conf.yml", "Path to configuration")
-	flag.StringVar(&PORT, "port", "8080", "Port to listen on")
-	flag.Parse()
-
 	if err := LoadConf(); err != nil {
 		log.Fatal(err)
 	}
