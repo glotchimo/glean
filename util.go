@@ -78,8 +78,6 @@ func serve(ch chan error) {
 	http.HandleFunc("/", SendIndex)
 	http.HandleFunc("/rss", SendFeed)
 	http.HandleFunc("/posts/", SendPost)
-	http.HandleFunc("/editor", SendEditor)
-	http.HandleFunc("/post", TakePost)
 	http.HandleFunc("/register", TakeEmail)
 
 	ch <- http.ListenAndServe(":"+PORT, nil)

@@ -22,10 +22,6 @@ var (
 	//go:embed tmpl/post.html
 	POST_HTML string
 	POST_TMPL *template.Template
-
-	//go:embed tmpl/edit.html
-	EDIT_HTML string
-	EDIT_TMPL *template.Template
 )
 
 func init() {
@@ -39,7 +35,6 @@ func init() {
 
 	INDEX_TMPL = template.Must(template.New("index").Parse(INDEX_HTML))
 	POST_TMPL = template.Must(template.New("post").Parse(POST_HTML))
-	EDIT_TMPL = template.Must(template.New("post").Parse(EDIT_HTML))
 }
 
 func main() {
