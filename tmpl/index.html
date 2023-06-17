@@ -1,137 +1,179 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>{{ .Meta.Title }}</title>
-    <style>
-      html, body, h1, h2, h3, h4, h5, h6, p, ul, ol, li, figure, figcaption, blockquote {
-        margin: 0;
-        padding: 0;
-      }
 
-      html {
-        font-family: sans-serif;
-        font-size: 18px;
-        line-height: 1.5;
-      }
+<head>
+  <title>{{ .Meta.Title }}</title>
+  <style>
+    html,
+    body,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    li,
+    figure,
+    figcaption,
+    blockquote {
+      margin: 0;
+      padding: 0;
+    }
 
+    html {
+      font-family: sans-serif;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px;
+    }
+
+    @media (max-width: 800px) {
       body {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 40px;
+        padding: 20px;
       }
+    }
 
-      h1, h2, h3, h4, h5, h6 {
-        font-weight: bold;
-        margin-bottom: 0.5em;
-      }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-weight: bold;
+      margin-bottom: 0.5em;
+    }
 
-      h1 {
-        font-size: 2em;
-      }
+    h1 {
+      font-size: 2em;
+    }
 
-      h2 {
-        font-size: 1.75em;
-      }
+    h2 {
+      font-size: 1.75em;
+    }
 
-      h3 {
-        font-size: 1.5em;
-      }
+    h3 {
+      font-size: 1.5em;
+    }
 
-      h4 {
-        font-size: 1.25em;
-      }
+    h4 {
+      font-size: 1.25em;
+    }
 
-      h5 {
-        font-size: 1em;
-      }
+    h5 {
+      font-size: 1em;
+    }
 
+    h6 {
+      align-items: end;
+      display: flex;
+      font-size: 0.75em;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    @media (max-width: 600px) {
       h6 {
-        align-items: end;
-        display: flex;
-        font-size: 0.75em;
-        justify-content: space-between;
+        flex-direction: column;
+        align-items: baseline;
+      }
+    }
+
+    p {
+      margin-bottom: 1em;
+    }
+
+    ul,
+    ol {
+      margin-bottom: 1em;
+      padding-left: 1em;
+    }
+
+    li {
+      margin-bottom: 0.5em;
+    }
+
+    blockquote {
+      margin: 1em 0;
+      padding-left: 1em;
+      border-left: 2px solid black;
+    }
+
+    form {
+      display: flex;
+    }
+
+    input {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: sans-serif;
+      font-size: 1em;
+      padding: 0.25em;
+      width: 16em;
+    }
+
+    @media (max-width: 600px) {
+      input {
         width: 100%;
       }
+    }
+  </style>
+</head>
 
-      p {
-        margin-bottom: 1em;
-      }
+<body>
+  <h1>{{ .Meta.Title }}</h1>
+  <h5>
+    <span>{{ .Meta.Author }} <a mailto="{{ .Meta.Email }}">{{ .Meta.Email }}</a></span>
+  </h5>
+  <h6>
+    <span>
+      {{ range $name, $link := .Meta.Links }}
+      <a href="{{ $link }}">{{ $name}}</a>
+      {{ end }}
+    </span>
 
-      ul, ol {
-        margin-bottom: 1em;
-        padding-left: 1em;
-      }
+    <form id="email-form" action="/register" method="post">
+      <input type="email" name="email" placeholder="Get Notified" required>
+    </form>
+  </h6>
 
-      li {
-        margin-bottom: 0.5em;
-      }
+  <hr>
+  {{ range .Titles }}
+  <a href="/posts/{{ . }}">{{ . }}</a><br>
+  {{ end }}
+  <hr>
 
-      blockquote {
-        margin: 1em 0;
-        padding-left: 1em;
-        border-left: 2px solid black;
-      }
+  <h6>
+    Brought to you by less than 400 lines of Go.
+    If you'd like to chat, please reach out via email.
+    Grace and peace!
+  </h6>
 
-      form {
-        display: flex;
-      }
-
-      input {
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-family: sans-serif;
-        font-size: 1em;
-        padding: 0.25em;
-        width: 16em;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>{{ .Meta.Title }}</h1>
-    <h5>
-      <span>{{ .Meta.Author }} <a mailto="{{ .Meta.Email }}">{{ .Meta.Email }}</a></span>
-    </h5>
-    <h6>
-      <span>
-        {{ range $name, $link := .Meta.Links }}
-        <a href="{{ $link }}">{{ $name}}</a>
-        {{ end }}
-      </span>
-    
-      <form id="email-form" action="/register" method="post">
-        <input type="email" name="email" placeholder="Get Notified" required>
-      </form>
-    </h6>
-
-    <hr>
-    {{ range .Titles }}
-    <a href="/posts/{{ . }}">{{ . }}</a><br>
-    {{ end }}
-    <hr>
-
-    <h6>
-      Brought to you by less than 400 lines of Go. 
-      If you'd like to chat, please reach out via email. 
-      Grace and peace!
-    </h6>
-
-    <script>
-      document.getElementById('email-form').addEventListener('submit', (event) => {
-        event.preventDefault();
-        var formData = new FormData(event.target);
-        fetch('/register', {
-          method: 'POST',
-          body: formData
-        }).then(function(response) {
-          if (!response.ok) {
-              throw Error('Failed to register');
-          }
-          alert('Registration succeeded');
-          event.target.reset();
-        }).catch(function(error) {
-          alert(error.message);
-        });
+  <script>
+    document.getElementById('email-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      var formData = new FormData(event.target);
+      fetch('/register', {
+        method: 'POST',
+        body: formData
+      }).then(function (response) {
+        if (!response.ok) {
+          throw Error('Failed to register');
+        }
+        alert('Registration succeeded');
+        event.target.reset();
+      }).catch(function (error) {
+        alert(error.message);
       });
-    </script>
-  </body>
+    });
+  </script>
+</body>
+
 </html>
