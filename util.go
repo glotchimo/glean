@@ -2,15 +2,88 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	_ "embed"
 	"fmt"
 	"io"
+	"log"
+	"net/http"
 	"net/mail"
 	"os"
 	"strings"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/parser"
 )
+
+func watch(ch chan error) {
+	log.Printf("starting FS watcher on %s\n", CONF.PostsPath)
+
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		ch <- fmt.Errorf("error creating watcher: %w", err)
+		return
+	}
+	defer watcher.Close()
+
+	if err := watcher.Add(CONF.PostsPath); err != nil {
+		ch <- fmt.Errorf("error adding posts folder: %w", err)
+		return
+	}
+
+	for {
+		select {
+		case event, ok := <-watcher.Events:
+			if !ok {
+				return
+			}
+
+			if event.Op&fsnotify.Create == fsnotify.Create {
+				post, err := MakePost(event.Name)
+				if err != nil {
+					ch <- fmt.Errorf("error making post: %w", err)
+					return
+				}
+
+				subject := fmt.Sprintf(
+					"%s: %s",
+					CONF.Meta.Title,
+					strings.TrimPrefix(strings.TrimSuffix(event.Name, ".md"), CONF.PostsPath+"/"))
+				content := bytes.Buffer{}
+				if err := POST_TMPL.Execute(&content, post); err != nil {
+					ch <- fmt.Errorf("error executing template: %w", err)
+					return
+				}
+
+				if err := SendEmail(subject, content.String()); err != nil {
+					ch <- fmt.Errorf("error sending email: %w", err)
+					return
+				}
+			}
+		case err, ok := <-watcher.Errors:
+			if !ok {
+				return
+			}
+
+			ch <- fmt.Errorf("error in watcher: %w", err)
+			return
+		}
+	}
+}
+
+func serve(ch chan error) {
+	log.Printf("starting HTTP server on port %s\n", PORT)
+
+	http.HandleFunc("/", SendIndex)
+	http.HandleFunc("/rss", SendFeed)
+	http.HandleFunc("/posts/", SendPost)
+	http.HandleFunc("/editor", SendEditor)
+	http.HandleFunc("/post", TakePost)
+	http.HandleFunc("/register", TakeEmail)
+
+	ch <- http.ListenAndServe(":"+PORT, nil)
+}
 
 func MakeIndex() (*Index, error) {
 	files, err := os.ReadDir(CONF.PostsPath)
@@ -27,6 +100,11 @@ func MakeIndex() (*Index, error) {
 
 		name = strings.TrimSuffix(name, ".md")
 		index.Titles = append(index.Titles, name)
+	}
+
+	for i := len(index.Titles)/2 - 1; i >= 0; i-- {
+		j := len(index.Titles) - 1 - i
+		index.Titles[i], index.Titles[j] = index.Titles[j], index.Titles[i]
 	}
 
 	return &index, nil
