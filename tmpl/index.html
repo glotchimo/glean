@@ -35,12 +35,6 @@
       padding: 40px;
     }
 
-    @media (max-width: 800px) {
-      body {
-        padding: 20px;
-      }
-    }
-
     h1,
     h2,
     h3,
@@ -79,13 +73,6 @@
       width: 100%;
     }
 
-    @media (max-width: 600px) {
-      h6 {
-        flex-direction: column;
-        align-items: baseline;
-      }
-    }
-
     p {
       margin-bottom: 1em;
     }
@@ -105,25 +92,6 @@
       padding-left: 1em;
       border-left: 2px solid black;
     }
-
-    form {
-      display: flex;
-    }
-
-    input {
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-family: sans-serif;
-      font-size: 1em;
-      padding: 0.25em;
-      width: 16em;
-    }
-
-    @media (max-width: 600px) {
-      input {
-        width: 100%;
-      }
-    }
   </style>
 </head>
 
@@ -132,17 +100,6 @@
   <h5>
     <span>{{ .Meta.Author }} <a mailto="{{ .Meta.Email }}">{{ .Meta.Email }}</a></span>
   </h5>
-  <h6>
-    <span>
-      {{ range $name, $link := .Meta.Links }}
-      <a href="{{ $link }}">{{ $name}}</a>
-      {{ end }}
-    </span>
-
-    <form id="email-form" action="/register" method="post">
-      <input type="email" name="email" placeholder="Get Notified" required>
-    </form>
-  </h6>
 
   <hr>
   {{ range .Titles }}
@@ -152,28 +109,6 @@
 
   <h6>
     Brought to you by less than 400 lines of Go.
-    If you'd like to chat, please reach out via email.
-    Grace and peace!
   </h6>
-
-  <script>
-    document.getElementById('email-form').addEventListener('submit', (event) => {
-      event.preventDefault();
-      var formData = new FormData(event.target);
-      fetch('/register', {
-        method: 'POST',
-        body: formData
-      }).then(function (response) {
-        if (!response.ok) {
-          throw Error('Failed to register');
-        }
-        alert('Registration succeeded');
-        event.target.reset();
-      }).catch(function (error) {
-        alert(error.message);
-      });
-    });
-  </script>
 </body>
 
-</html>
