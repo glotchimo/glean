@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -10,31 +9,37 @@ import (
 )
 
 var (
-	CONF Conf
+	HOST = os.Getenv("RAILWAY_STATIC_URL")
+	PORT = os.Getenv("GLEAN_PORT")
+	PATH = os.Getenv("GLEAN_PATH")
+	PASS = os.Getenv("GLEAN_PASS")
+
+	TITLE  = os.Getenv("GLEAN_TITLE")
+	AUTHOR = os.Getenv("GLEAN_AUTHOR")
+	EMAIL  = os.Getenv("GLEAN_EMAIL")
 
 	//go:embed tmpl/index.html
 	INDEX_HTML string
-	INDEX_TMPL *template.Template
+	INDEX_TMPL = template.Must(template.New("index").Parse(INDEX_HTML))
 
 	//go:embed tmpl/post.html
 	POST_HTML string
-	POST_TMPL *template.Template
+	POST_TMPL = template.Must(template.New("post").Parse(POST_HTML))
 )
 
-func init() {
-	if err := LoadConf(); err != nil {
-		log.Fatal(err)
-	}
+func serve(ch chan error) {
+	log.Printf("starting HTTP server on port %s\n", PORT)
 
-	INDEX_TMPL = template.Must(template.New("index").Parse(INDEX_HTML))
-	POST_TMPL = template.Must(template.New("post").Parse(POST_HTML))
+	http.HandleFunc("/", SendIndex)
+	http.HandleFunc("/new", TakePost)
+	http.HandleFunc("/posts/", SendPost)
+	http.HandleFunc("/rss", SendFeed)
+
+	ch <- http.ListenAndServe(":"+PORT, nil)
 }
 
 func main() {
-	watchErrs := make(chan error)
 	serveErrs := make(chan error)
-
-	go watch(watchErrs)
 	go serve(serveErrs)
 
 	signals := make(chan os.Signal, 1)
@@ -42,8 +47,6 @@ func main() {
 
 	for {
 		select {
-		case err := <-watchErrs:
-			log.Printf("error in watcher: %s\n", err.Error())
 		case err := <-serveErrs:
 			log.Fatalf("error in server: %s\n", err.Error())
 		case sig := <-signals:

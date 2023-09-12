@@ -1,10 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 )
+
+type Meta struct {
+	Title  string
+	Author string
+	Email  string
+}
 
 type Index struct {
 	Meta   Meta
@@ -72,7 +81,7 @@ func SendPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	path := strings.TrimPrefix(r.URL.Path, "/posts")
-	post, err := MakePost(CONF.PostsPath + path + ".md")
+	post, err := MakePost(PATH + path + ".md")
 	if err != nil {
 		log.Println("error making post:", err.Error())
 		http.Error(w, "error making post", http.StatusInternalServerError)
@@ -80,12 +89,12 @@ func SendPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := POST_TMPL.Execute(w, post); err != nil {
-		log.Println(err.Error())
+		log.Println("error executing template:", err.Error())
 		http.Error(w, "error executing template", http.StatusInternalServerError)
 	}
 }
 
-func TakeEmail(w http.ResponseWriter, r *http.Request) {
+func TakePost(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s: %s %s (%dB)", r.RemoteAddr, r.Method, r.Host, r.ContentLength)
 
 	if r.Method != "POST" {
@@ -93,12 +102,45 @@ func TakeEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email := r.FormValue("email")
-	if err := SaveEmail(email); err != nil {
-		log.Println("error saving email:", err.Error())
-		http.Error(w, "error saving email", http.StatusInternalServerError)
+	if !IsKeyValid(r.Header.Get("Authorization")) {
+		log.Println("invalid key")
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	title := r.FormValue("title")
+	if title == "" {
+		log.Println("empty title")
+		http.Error(w, "empty title", http.StatusBadRequest)
+		return
+	}
+
+	content := r.FormValue("content")
+	if content == "" {
+		log.Println("empty content")
+		http.Error(w, "empty content", http.StatusBadRequest)
+		return
+	}
+
+	path := fmt.Sprintf("%s/%s %s.md", PATH, time.Now().Format(time.DateOnly), title)
+	f, err := os.Create(path)
+	if err != nil {
+		log.Println("error creating new post file:", err.Error())
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if _, err := f.WriteString(content); err != nil {
+		log.Println("error writing new post file:", err.Error())
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := f.Close(); err != nil {
+		log.Println("error closing new post file:", err.Error())
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }

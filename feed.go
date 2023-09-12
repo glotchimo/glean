@@ -32,8 +32,8 @@ func MakeFeed(index *Index) (string, error) {
 	feed := Feed{
 		Version: "2.0",
 		Channel: Channel{
-			Title:         CONF.Meta.Title,
-			Link:          CONF.Host,
+			Title:         TITLE,
+			Link:          HOST,
 			LastBuildDate: time.Now().Format(time.RFC1123),
 		},
 	}
@@ -46,7 +46,7 @@ func MakeFeed(index *Index) (string, error) {
 
 		item := Item{
 			Title:   t,
-			Link:    CONF.Host + "/posts/" + t,
+			Link:    HOST + "/posts/" + t,
 			PubDate: pub.Format(time.RFC1123),
 		}
 
