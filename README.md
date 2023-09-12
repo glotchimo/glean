@@ -5,7 +5,28 @@ as HTML with a little bit of styling to make it all bearable and nice.
 
 ## Usage
 
-Set environment variables according to `main.go` and run the binary.
+First, set the following environment variables:
+
+```
+GLEAN_PORT="8080"
+GLEAN_PATH="path/to/folder"
+GLEAN_PASS="biglongsecureapikey"
+GLEAN_TITLE="Joe Schmoe's Blog"
+GLEAN_AUTHOR="Joe Schmoe"
+GLEAN_EMAIL="joe@schmoe.com"
+```
+
+Then, you're good to run it:
+
+```sh
+./glean
+```
+
+Use the `post` script to add posts:
+
+```sh
+post -d Article.md
+```
 
 ## Features
 
