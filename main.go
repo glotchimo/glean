@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"text/template"
