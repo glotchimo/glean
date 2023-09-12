@@ -1,0 +1,28 @@
+#!/bin/bash
+
+LOCAL_URL="http://localhost:8080/new"
+PROD_URL="${GLEAN_HOST}"
+
+while getopts ":dp" opt; do
+  case $opt in
+    d) SERVER_URL="$LOCAL_URL";;
+    p) SERVER_URL="$PROD_URL";;
+    *) echo "Invalid option: -$OPTARG" >&2; exit 1;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ "$#" -ne 1 ]; then
+  echo "Usage: $0 [-d|-p] /path/to/markdown/file.md"
+  exit 1
+fi
+
+FILE_PATH="$1"
+FILE_NAME=$(basename "$FILE_PATH")
+FILE_CONTENT=$(cat "$FILE_PATH")
+
+curl -X POST \
+     -H "Authorization: ${GLEAN_PASS}" \
+     -F "title=${FILE_NAME}" \
+     -F "content=${FILE_CONTENT}" \
+     "${SERVER_URL}"
