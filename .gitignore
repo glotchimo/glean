@@ -1,6 +1,4 @@
 posts/
 glean
 *.yml
-.nova
-dist/
-.DS_Store
+.env
