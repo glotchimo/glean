@@ -2,8 +2,22 @@
 <html>
 
 <head>
+  <link rel="preconnect" href="https://rsms.me/">
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+
   <title>{{ .Meta.Title }}</title>
+
   <style>
+    :root {
+      font-family: 'Inter', sans-serif;
+    }
+
+    @supports (font-variation-settings: normal) {
+      :root {
+        font-family: 'Inter var', sans-serif;
+      }
+    }
+
     html,
     body,
     h1,
@@ -24,9 +38,10 @@
     }
 
     html {
-      font-family: sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 18px;
       line-height: 1.5;
+      background-color: #EDEDED;
     }
 
     body {
@@ -35,18 +50,9 @@
       padding: 40px;
     }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-      font-weight: bold;
-      margin-bottom: 0.5em;
-    }
-
     h1 {
       font-size: 2em;
+      font-weight: normal;
     }
 
     h2 {
@@ -63,14 +69,18 @@
 
     h5 {
       font-size: 1em;
+      font-weight: bold;
+      color: #666666;
     }
 
     h6 {
       align-items: end;
       display: flex;
-      font-size: 0.75em;
+      font-size: 0.5em;
       justify-content: space-between;
       width: 100%;
+      color: #9e9e9e;
+      font-weight: 300;
     }
 
     p {
@@ -85,6 +95,10 @@
 
     li {
       margin-bottom: 0.5em;
+    }
+
+    a {
+      color: black;
     }
 
     blockquote {
