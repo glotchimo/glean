@@ -7,12 +7,13 @@ import (
 	"os"
 	"os/signal"
 	"text/template"
+
+	"github.com/joho/godotenv"
 )
 
 var (
 	HOST = os.Getenv("RAILWAY_STATIC_URL")
-	PORT = os.Getenv("GLEAN_PORT")
-	PATH = os.Getenv("GLEAN_PATH")
+	PORT = os.Getenv("PORT")
 	PASS = os.Getenv("GLEAN_PASS")
 
 	TITLE  = os.Getenv("GLEAN_TITLE")
@@ -40,6 +41,21 @@ func serve(ch chan error) {
 }
 
 func main() {
+	// Load environment variables
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Warning: error loading .env file: %v\n", err)
+	}
+
+	// Set default port if not set
+	if PORT == "" {
+		PORT = "8080"
+	}
+
+	// Initialize storage
+	if err := initStorage(); err != nil {
+		log.Fatalf("Failed to initialize storage: %v\n", err)
+	}
+
 	serveErrs := make(chan error)
 	go serve(serveErrs)
 

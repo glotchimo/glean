@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -80,8 +79,8 @@ func SendPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	path := strings.TrimPrefix(r.URL.Path, "/posts")
-	post, err := MakePost(PATH + path + ".md")
+	path := strings.TrimPrefix(r.URL.Path, "/posts/")
+	post, err := MakePost(path)
 	if err != nil {
 		log.Println("error making post:", err.Error())
 		http.Error(w, "error making post", http.StatusInternalServerError)
@@ -122,22 +121,9 @@ func TakePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	path := fmt.Sprintf("%s/%s %s.md", PATH, time.Now().Format(time.DateOnly), title)
-	f, err := os.Create(path)
-	if err != nil {
-		log.Println("error creating new post file:", err.Error())
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if _, err := f.WriteString(content); err != nil {
-		log.Println("error writing new post file:", err.Error())
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if err := f.Close(); err != nil {
-		log.Println("error closing new post file:", err.Error())
+	name := fmt.Sprintf("%s %s", time.Now().Format(time.DateOnly), title)
+	if err := savePost(name, []byte(content)); err != nil {
+		log.Println("error saving post:", err.Error())
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}

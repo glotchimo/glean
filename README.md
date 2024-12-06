@@ -1,7 +1,7 @@
 # Glean
 
-A plain and simple blog engine in Go. It serves Markdown files from a folder
-as HTML with a little bit of styling to make it all bearable and nice.
+A plain and simple blog engine in Go. It serves Markdown files from Tigris object storage
+with a little bit of styling to make it all bearable and nice.
 
 ## Usage
 
@@ -9,11 +9,16 @@ First, set the following environment variables:
 
 ```
 GLEAN_PORT="8080"
-GLEAN_PATH="path/to/folder"
 GLEAN_PASS="biglongsecureapikey"
 GLEAN_TITLE="Joe Schmoe's Blog"
 GLEAN_AUTHOR="Joe Schmoe"
 GLEAN_EMAIL="joe@schmoe.com"
+
+# Tigris Storage Configuration
+BUCKET_NAME="summer-grass-2004"
+AWS_ENDPOINT_URL_S3="https://fly.storage.tigris.dev"
+AWS_ACCESS_KEY_ID="tid_xxxxxx"
+AWS_SECRET_ACCESS_KEY="tsec_xxxxxx"
 ```
 
 Then, you're good to run it:
@@ -33,5 +38,5 @@ post -d Article.md
 - On-the-fly Markdown -> HTML conversion for posts
 - Dynamically-generated index page
 - Configurable header content
-- Configurable path for folder containing post files
+- Tigris object storage for posts
 - RSS feed
